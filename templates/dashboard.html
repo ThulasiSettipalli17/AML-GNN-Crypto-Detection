@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AML Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>AML Performance Dashboard</h1>
+            <div class="nav">
+                <a href="/">Home</a>
+                <a href="/dashboard" class="active">Dashboard</a>
+            </div>
+        </header>
+
+        <section class="dashboard-grid">
+            <!-- Dataset Details -->
+            <div class="card stat-card">
+                <h3>Dataset Details</h3>
+                <div class="stats">
+                    <div class="stat-item">
+                        <span>Total Transactions</span>
+                        <strong>{{ details.total }}</strong>
+                    </div>
+                    <div class="stat-item">
+                        <span>Bad Labels</span>
+                        <strong class="bad-text">{{ details.bad }}</strong>
+                    </div>
+                    <div class="stat-item">
+                        <span>Good Labels</span>
+                        <strong class="good-text">{{ details.good }}</strong>
+                    </div>
+                    <div class="stat-item">
+                        <span>Features</span>
+                        <strong>{{ details.features }}</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Accuracy Comparison -->
+            <div class="card graph-card">
+                <h3>Model Accuracy Comparison</h3>
+                <canvas id="accuracyChart"></canvas>
+            </div>
+
+            <!-- F1 & Recall Metrics -->
+            <div class="card graph-card">
+                <h3>F1 & Recall Scores</h3>
+                <canvas id="metricsChart"></canvas>
+            </div>
+
+            <!-- Version Info -->
+            <div class="card version-card">
+                <h3>System Requirements</h3>
+                <ul class="version-list">
+                    <li>Python: 3.10+</li>
+                    <li>Flask: 3.0.0</li>
+                    <li>PyTorch: 2.1.2</li>
+                    <li>PyTorch Geometric: 2.4.0</li>
+                    <li>Scikit-learn: 1.3.2</li>
+                    <li>Pandas: 2.0.3</li>
+                    <li>Numpy: 1.26.4</li>
+                </ul>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        const metrics = {{ metrics | tojson }};
+
+        // Accuracy Chart
+        new Chart(document.getElementById('accuracyChart'), {
+            type: 'bar',
+            data: {
+                labels: ['Random Forest', 'GNN'],
+                datasets: [{
+                    label: 'Accuracy',
+                    data: [metrics.rf.accuracy, metrics.gnn.accuracy],
+                    backgroundColor: ['#6366f1', '#10b981']
+                }]
+            },
+            options: { responsive: true, scales: { y: { beginAtZero: true, max: 1 } } }
+        });
+
+        // F1 & Recall Chart
+        new Chart(document.getElementById('metricsChart'), {
+            type: 'bar',
+            data: {
+                labels: ['F1 Score', 'Recall'],
+                datasets: [
+                    {
+                        label: 'Random Forest',
+                        data: [metrics.rf.f1, metrics.rf.recall],
+                        backgroundColor: '#6366f1'
+                    },
+                    {
+                        label: 'GNN',
+                        data: [metrics.gnn.f1, metrics.gnn.recall],
+                        backgroundColor: '#10b981'
+                    }
+                ]
+            },
+            options: { responsive: true, scales: { y: { beginAtZero: true, max: 1 } } }
+        });
+    </script>
+</body>
+
+</html>
